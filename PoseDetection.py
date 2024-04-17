@@ -5,7 +5,7 @@ import numpy as np
 mp_pose = mp.solutions.pose
 mp_draw = mp.solutions.drawing_utils
 pose = mp_pose.Pose()
-cap = cv2.VideoCapture("C:/Users/yvzyl/OneDrive/Masaüstü/Videolar/barbell biceps curl_10.mp4")
+cap = cv2.VideoCapture("videos/lateral raise/lateral raise_10.mp4")
 # cap = cv2.VideoCapture(0)  # for real-time detection
 
 while True:
@@ -59,4 +59,3 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
-
