@@ -6,11 +6,11 @@ import numpy as np
 mp_pose = mp.solutions.pose
 mp_draw = mp.solutions.drawing_utils
 pose = mp_pose.Pose()
-cap = cv2.VideoCapture("videos/lateral raise/Dumbbell_Lateral_Raise.mp4")
+cap = cv2.VideoCapture("videos/biceps curl/barbell biceps curl_23.mp4")
 
 ### get video resolution
-width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)*0.5)
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)*0.5)
 
 while True:
     ret, img = cap.read()
@@ -19,7 +19,10 @@ while True:
     img = cv2.resize(img, (width, height))
 
     results = pose.process(img)
-    mp_draw.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+    mp_draw.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                           mp_draw.DrawingSpec((255, 0, 0), 2, 1),
+                           mp_draw.DrawingSpec((0, 255, 0), 1, 1))
+
     list = []
     if not results.pose_landmarks:
         print("nothing")
@@ -31,9 +34,15 @@ while True:
             cv2.circle(img, (x, y), 1, (255, 0, 255), -1)
             list.append([x, y, z])
 
+            # save the list data to a file
+        with open('landmarks.txt', 'a') as f:
+            for item in list:
+                f.write("%s\n" % item)
+
         a = np.array([list[11][0], list[11][1], list[11][2]])
         b = np.array([list[13][0], list[13][1], list[13][2]])
         c = np.array([list[15][0], list[15][1], list[15][2]])
+
         ba = a - b
         bc = c - b
 
