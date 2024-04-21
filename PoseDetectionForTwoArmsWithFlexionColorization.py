@@ -55,7 +55,7 @@ while True:
             # Calculate color based on angle_deg
             green = max(0, int((180 - angle_deg) / 180 * 255))
             red = max(0, int((angle_deg / 180) * 255))
-            color = (0, red, green)  # Create color tuple
+            color = (0, red, green)
 
             ## R G B
             ## AÇI 0 İKEN 255 0 0
