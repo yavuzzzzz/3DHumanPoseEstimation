@@ -36,6 +36,7 @@ while True:
             for item in list:
                 f.write("%s\n" % item)
 
+        joint_pairs = [(11, 13, 15), (12, 14, 16)]
         for indices in [(11, 13, 15), (12, 14, 16)]:
             a = np.array([list[indices[0]][0], list[indices[0]][1], list[indices[0]][2]])
             b = np.array([list[indices[1]][0], list[indices[1]][1], list[indices[1]][2]])
