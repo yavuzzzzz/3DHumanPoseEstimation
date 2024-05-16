@@ -11,6 +11,17 @@ pose = mp_pose.Pose()
 video_dir = "videos/biceps curl/"
 video_files = [f for f in os.listdir(video_dir) if f.endswith('.mp4')]
 
+# omuz ve dirsek arasındaki çizgiyi çiz
+shoulder_to_elbow = [(mp_pose.PoseLandmark.LEFT_SHOULDER, mp_pose.PoseLandmark.LEFT_ELBOW),
+                     (mp_pose.PoseLandmark.RIGHT_SHOULDER, mp_pose.PoseLandmark.RIGHT_ELBOW)]
+
+# dirsek ve el bileği arasındaki çizgiyi çiz
+elbow_to_wrist = [(mp_pose.PoseLandmark.LEFT_ELBOW, mp_pose.PoseLandmark.LEFT_WRIST),
+                  (mp_pose.PoseLandmark.RIGHT_ELBOW, mp_pose.PoseLandmark.RIGHT_WRIST)]
+
+# omuz ve dirsek arasındaki çizgiyi ve dirsek ve el bileği arasındaki çizgiyi çiz
+connections = shoulder_to_elbow + elbow_to_wrist
+
 for video_file in video_files:
     video_path = os.path.join(video_dir, video_file)
     cap = cv2.VideoCapture(video_path)
@@ -18,6 +29,11 @@ for video_file in video_files:
     ### get video resolution
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)*0.5)
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)*0.5)
+
+    # Video'nun FPS'ini yarıya düşür
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    new_fps = fps / 2
+    delay = int(1000 / new_fps)
 
     while True:
         ret, img = cap.read()
@@ -84,7 +100,7 @@ for video_file in video_files:
                 arc = cv2.bitwise_and(mask, arc_mask)
                 img = cv2.bitwise_or(img, arc)
 
-                mp_draw.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                mp_draw.draw_landmarks(img, results.pose_landmarks, shoulder_to_elbow,
                                        mp_draw.DrawingSpec((0, 0, 0), 2, 1),
                                        mp_draw.DrawingSpec(color, 1, 1))
 
@@ -92,13 +108,13 @@ for video_file in video_files:
 
         h, w, c = img.shape
         opImg = np.zeros([h, w, c])
-        mp_draw.draw_landmarks(opImg, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+        mp_draw.draw_landmarks(opImg, results.pose_landmarks, shoulder_to_elbow,
                                mp_draw.DrawingSpec((255, 0, 0), 3, 3),
-                               mp_draw.DrawingSpec((0, 255, 0), 3, 3))
+                               mp_draw.DrawingSpec((0, 255, 0), 10, 3))
 
         cv2.imshow("Extracted Pose", opImg)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(delay) & 0xFF == ord('q'):
             break
 
     cap.release()
