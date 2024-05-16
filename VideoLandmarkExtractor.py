@@ -27,28 +27,28 @@ for video_file in video_files:
 
         results = pose.process(img)
 
-        list = []
+        landmark_data = []  # Her bir landmark için koordinatları saklamak için liste
+
         if not results.pose_landmarks:
             print("nothing")
         else:
-            for id, lm in enumerate(results.pose_landmarks.landmark):
-                x = int(lm.x * width)
-                y = int(lm.y * height)
-                z = int(lm.z * height)
-                cv2.circle(img, (x, y), 1, (255, 0, 255), -1)
-                list.append([x, y, z])
+            for lm in results.pose_landmarks.landmark:
+                x = lm.x * width
+                y = lm.y * height
+                z = lm.z * height
+                landmark_data.extend([x, y, z])  # x, y, z koordinatlarını listeye ekle
 
-            # save the list data to a file
-            # create a new text file for each video and write the landmarks into it
+            # save the landmark data to a file
+            # create a new text file for each video and write the landmarks(old) into it
             with open(f'{os.path.splitext(video_file)[0]}.txt', 'a') as f:
-                for item in list:
-                    f.write("%s\n" % item)
+                # Tüm landmarkların x, y, z koordinatlarını bir satırda yaz
+                f.write(" ".join(map(str, landmark_data)) + "\n")
 
             joint_pairs = [(11, 13, 15), (12, 14, 16)]
             for indices in joint_pairs:
-                a = np.array([list[indices[0]][0], list[indices[0]][1], list[indices[0]][2]])
-                b = np.array([list[indices[1]][0], list[indices[1]][1], list[indices[1]][2]])
-                c = np.array([list[indices[2]][0], list[indices[2]][1], list[indices[2]][2]])
+                a = np.array([landmark_data[3*indices[0]], landmark_data[3*indices[0]+1], landmark_data[3*indices[0]+2]])
+                b = np.array([landmark_data[3*indices[1]], landmark_data[3*indices[1]+1], landmark_data[3*indices[1]+2]])
+                c = np.array([landmark_data[3*indices[2]], landmark_data[3*indices[2]+1], landmark_data[3*indices[2]+2]])
 
                 ba = a - b
                 bc = c - b
@@ -64,8 +64,8 @@ for video_file in video_files:
                 red = max(0, int((angle_deg / 180) * 255))
                 color = (0, red, green)
 
-                cv2.putText(img, str(angle_deg) + " deg", (list[indices[1]][0], list[indices[1]][1] + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-                center = (b[0], b[1])
+                cv2.putText(img, str(angle_deg) + " deg", (int(b[0]), int(b[1]) + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+                center = (int(b[0]), int(b[1]))
 
                 radius = 10
                 mask = np.zeros_like(img)
