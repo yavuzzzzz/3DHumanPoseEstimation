@@ -102,7 +102,7 @@ for video_file in video_files:
 
                 mp_draw.draw_landmarks(img, results.pose_landmarks, shoulder_to_elbow,
                                        mp_draw.DrawingSpec((0, 0, 0), 2, 1),
-                                       mp_draw.DrawingSpec(color, 1, 1))
+                                       mp_draw.DrawingSpec(color, 5, 1))
 
         cv2.imshow("Pose Estimation", img)
 
