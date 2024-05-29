@@ -15,9 +15,10 @@ def load_data_from_folder(folder_path, prefix, label):
                     points = line.strip().split()
                     points = [float(p) for p in points]
                     # Her 3 öğeyi bir grup olarak al ve listede sakla
-                    grouped_points = [points[i:i+3] for i in range(0, len(points), 3)]
-                    data.append(grouped_points)
-                    labels.append(label)
+                    if len(points) % 3 == 0:  # Eğer toplam nokta sayısı 3'e bölünüyorsa
+                        grouped_points = [points[i:i+3] for i in range(0, len(points), 3)]
+                        data.append(grouped_points)
+                        labels.append(label)
     return data, labels
 
 # Verileri yükle
@@ -25,8 +26,8 @@ data = []
 labels = []
 
 # "barbell biceps curl" ve "lateral raise" dosyalarını yükle
-biceps_curl_data, biceps_curl_labels = load_data_from_folder('landmarks', 'barbell_biceps_curl', 0)
-lateral_raise_data, lateral_raise_labels = load_data_from_folder('landmarks', 'lateral_raise', 1)
+biceps_curl_data, biceps_curl_labels = load_data_from_folder('augmented_landmarks', 'barbell biceps curl', 0)
+lateral_raise_data, lateral_raise_labels = load_data_from_folder('augmented_landmarks', 'lateral raise', 1)
 
 # Verileri birleştir
 data.extend(biceps_curl_data)
@@ -40,7 +41,7 @@ labels = np.array(labels)
 
 # Verilerin aynı şekle sahip olduğundan emin olun
 max_length = max(len(d) for d in data)
-num_landmarks = len(data[0][0])
+num_landmarks = len(data[0][0]) if data.size > 0 else 0  # Verilerin boş olup olmadığını kontrol et
 padded_data = []
 for d in data:
     d = np.array(d)
@@ -55,6 +56,11 @@ final_labels = np.array(labels)
 
 # Verileri eğitim ve test setlerine ayır
 X_train, X_test, y_train, y_test = train_test_split(final_data, final_labels, test_size=0.2, random_state=42)
+print(len(X_train), len(X_test))
+
+# Eğitim setini daha da eğitim ve doğrulama setlerine ayır
+X_train, X_val, y_train, y_val = train_test_split(final_data, final_labels, test_size=0.2, random_state=42)
+print(len(X_train), len(X_val))
 
 # Modeli tanımlayın
 model = tf.keras.models.Sequential([
@@ -71,7 +77,7 @@ model = tf.keras.models.Sequential([
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 # Modeli eğitin
-model.fit(X_train, y_train, epochs=10, validation_data=(X_test, y_test))
+model.fit(X_train, y_train, epochs=5, validation_data=(X_test, y_test))
 
 # Modeli değerlendirin
 loss, accuracy = model.evaluate(X_test, y_test)
@@ -83,3 +89,4 @@ y_pred_classes = np.argmax(y_pred, axis=1)
 
 # F1 skoru, precision ve recall hesaplayın
 print(classification_report(y_test, y_pred_classes))
+# Path: CNNImpl.py
