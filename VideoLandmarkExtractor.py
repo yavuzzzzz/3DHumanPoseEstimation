@@ -8,8 +8,13 @@ mp_draw = mp.solutions.drawing_utils
 pose = mp_pose.Pose()
 
 # videos/biceps curl/ dizinindeki tüm .mp4 dosyalarını listele
-video_dir = "videos/biceps curl/"
-video_files = [f for f in os.listdir(video_dir) if f.endswith('.mp4')]
+video_dir = "videos/lateral raise"
+landmarks_dir = "landmarks/"
+video_files = [f for f in os.listdir(video_dir) if f.endswith('.MOV')]
+
+# Landmarks klasörü yoksa oluştur
+if not os.path.exists(landmarks_dir):
+    os.makedirs(landmarks_dir)
 
 for video_file in video_files:
     video_path = os.path.join(video_dir, video_file)
@@ -38,9 +43,11 @@ for video_file in video_files:
                 z = lm.z * height
                 landmark_data.extend([x, y, z])  # x, y, z koordinatlarını listeye ekle
 
-            # save the landmark data to a file
-            # create a new text file for each video and write the landmarks(old) into it
-            with open(f'{os.path.splitext(video_file)[0]}.txt', 'a') as f:
+            # Landmarks dosyası
+            landmarks_file = os.path.join(landmarks_dir, f'{os.path.splitext(video_file)[0]}.txt')
+
+            # Landmarks dosyasına veriyi yaz
+            with open(landmarks_file, 'a') as f:
                 # Tüm landmarkların x, y, z koordinatlarını bir satırda yaz
                 f.write(" ".join(map(str, landmark_data)) + "\n")
 
