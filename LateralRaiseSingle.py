@@ -19,6 +19,10 @@ cap = cv2.VideoCapture(video_file)
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) * 0.5)
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) * 0.5)
 
+# get video fps and calculate wait time
+fps = cap.get(cv2.CAP_PROP_FPS)
+wait_time = int(1000 / fps * 2)  # double the wait time to half the fps
+
 while True:
     ret, img = cap.read()
     if img is None:
@@ -69,7 +73,7 @@ while True:
 
     cv2.imshow("Pose Estimation", img)
 
-    if cv2.waitKey(20) & 0xFF == ord('q'):
+    if cv2.waitKey(wait_time) & 0xFF == ord('q'):
         break
 
 cap.release()
