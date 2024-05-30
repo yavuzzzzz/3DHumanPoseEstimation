@@ -11,14 +11,9 @@ pose = mp_pose.Pose()
 video_dir = "videos/lateral raise/"
 video_files = [f for f in os.listdir(video_dir) if (f.endswith('.mp4') | f.endswith('.MOV'))]
 
-
-# omuz ve bilek arasındaki çizgiyi çiz
-shoulder_to_wrist = [(mp_pose.PoseLandmark.LEFT_SHOULDER, mp_pose.PoseLandmark.LEFT_WRIST),
-                     (mp_pose.PoseLandmark.RIGHT_SHOULDER, mp_pose.PoseLandmark.RIGHT_WRIST)]
-
-# omuz ve bilek arasındaki çizgiyi çiz
-connections = shoulder_to_wrist
-
+# bel, omuz ve dirsek arasındaki çizgiyi çiz
+hip_to_shoulder_to_elbow = [(mp_pose.PoseLandmark.LEFT_HIP, mp_pose.PoseLandmark.LEFT_SHOULDER, mp_pose.PoseLandmark.LEFT_ELBOW),
+                            (mp_pose.PoseLandmark.RIGHT_HIP, mp_pose.PoseLandmark.RIGHT_SHOULDER, mp_pose.PoseLandmark.RIGHT_ELBOW)]
 
 for video_file in video_files:
     video_path = os.path.join(video_dir, video_file)
@@ -27,11 +22,6 @@ for video_file in video_files:
     ### get video resolution
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) * 0.5)
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) * 0.5)
-
-    # Video'nun FPS'ini yarıya düşür
-    #fps = cap.get(cv2.CAP_PROP_FPS)
-    #new_fps = fps / 2
-    #delay = int(1000 / new_fps)
 
     while True:
         ret, img = cap.read()
@@ -52,7 +42,7 @@ for video_file in video_files:
                 cv2.circle(img, (x, y), 1, (255, 0, 255), -1)
                 list.append([x, y, z])
 
-            joint_pairs = [(11, 13, 15), (12, 14, 16)]
+            joint_pairs = hip_to_shoulder_to_elbow
             for indices in joint_pairs:
                 a = np.array([list[indices[0]][0], list[indices[0]][1], list[indices[0]][2]])
                 b = np.array([list[indices[1]][0], list[indices[1]][1], list[indices[1]][2]])
@@ -95,7 +85,7 @@ for video_file in video_files:
                 arc = cv2.bitwise_and(mask, arc_mask)
                 img = cv2.bitwise_or(img, arc)
 
-                mp_draw.draw_landmarks(img, results.pose_landmarks, shoulder_to_wrist,
+                mp_draw.draw_landmarks(img, results.pose_landmarks, hip_to_shoulder_to_elbow,
                                        mp_draw.DrawingSpec((0, 0, 0), 2, 1),
                                        mp_draw.DrawingSpec(color, 5, 1))
 
@@ -103,7 +93,7 @@ for video_file in video_files:
 
         h, w, c = img.shape
         opImg = np.zeros([h, w, c])
-        mp_draw.draw_landmarks(opImg, results.pose_landmarks, shoulder_to_wrist,
+        mp_draw.draw_landmarks(opImg, results.pose_landmarks, hip_to_shoulder_to_elbow,
                                mp_draw.DrawingSpec((255, 0, 0), 3, 3),
                                mp_draw.DrawingSpec((0, 255, 0), 10, 3))
 
