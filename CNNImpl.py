@@ -20,10 +20,22 @@ def load_data_from_folder(folder_path, prefix, label):
                         data.append(grouped_points)
                         labels.append(label)
     return data, labels
-
+def load_data_from_txt(file_path):
+    data = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            points = line.strip().split()
+            points = [float(p) for p in points]
+            # Her 3 öğeyi bir grup olarak al ve listede sakla
+            if len(points) % 3 == 0:  # Eğer toplam nokta sayısı 3'e bölünüyorsa
+                grouped_points = [points[i:i + 3] for i in range(0, len(points), 3)]
+                data.append(grouped_points)
+    return data
 # Verileri yükle
 data = []
 labels = []
+#demo = load_data_from_txt('demo.txt') demo dosyası barbell biceps curl hareketinin landmarks'larını içerir
+demo = load_data_from_txt('demo2.txt') #demo2 dosyası lateral raise hareketinin landmarks'larını içerir
 
 # "barbell biceps curl" ve "lateral raise" dosyalarını yükle
 biceps_curl_data, biceps_curl_labels = load_data_from_folder('augmented_landmarks', 'barbell biceps curl', 0)
@@ -36,6 +48,7 @@ labels.extend(biceps_curl_labels)
 labels.extend(lateral_raise_labels)
 
 # Numpy dizilerine dönüştür
+demo = np.array(demo, dtype=np.float32)
 data = np.array(data, dtype=object)
 labels = np.array(labels)
 
@@ -56,11 +69,13 @@ final_labels = np.array(labels)
 
 # Verileri eğitim ve test setlerine ayır
 X_train, X_test, y_train, y_test = train_test_split(final_data, final_labels, test_size=0.2, random_state=42)
-print(len(X_train), len(X_test))
 
+print(X_train.shape)
 # Eğitim setini daha da eğitim ve doğrulama setlerine ayır
 X_train, X_val, y_train, y_val = train_test_split(final_data, final_labels, test_size=0.2, random_state=42)
-print(len(X_train), len(X_val))
+
+
+demo = demo.reshape(-1, X_train.shape[1], X_train.shape[2])
 
 # Modeli tanımlayın
 model = tf.keras.models.Sequential([
@@ -79,6 +94,7 @@ model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=
 # Modeli eğitin
 model.fit(X_train, y_train, epochs=5, validation_data=(X_test, y_test))
 
+
 # Modeli değerlendirin
 loss, accuracy = model.evaluate(X_test, y_test)
 print(f'Test Accuracy: {accuracy * 100:.2f}%')
@@ -86,7 +102,12 @@ print(f'Test Accuracy: {accuracy * 100:.2f}%')
 # Tahminlerde bulunun
 y_pred = model.predict(X_test)
 y_pred_classes = np.argmax(y_pred, axis=1)
+demo_pred = model.predict(demo)
+demo_pred_classes = np.argmax(demo_pred, axis=1)
+
+print(demo_pred_classes)
 
 # F1 skoru, precision ve recall hesaplayın
 print(classification_report(y_test, y_pred_classes))
 # Path: CNNImpl.py
+model.save('my_model.keras')
