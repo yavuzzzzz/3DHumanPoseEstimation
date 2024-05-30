@@ -51,15 +51,21 @@ while True:
             angle = np.arccos(cosine_angle)
 
             angle_deg = round(np.degrees(angle))
-            angle_text = "Angle: {} degrees".format(angle_deg)
 
             # Calculate color based on angle_deg
-            red = max(0, int((180 - angle_deg) / 180 * 255))
-            green = max(0, int((angle_deg / 180) * 255))
+            green = max(0, int((angle_deg / 90) * 255))
+            red = max(0, int((1 - angle_deg / 90) * 255))
             color = (0, red, green)
 
             # Draw colored circle at shoulder joint
             cv2.circle(img, (b[0], b[1]), 10, color, -1)
+
+            # Calculate percentage based on angle_deg
+            percentage = min(100, round((angle_deg / 90) * 100))
+            percentage_text = "{}%".format(percentage)
+
+            # Put percentage text on shoulder joint
+            cv2.putText(img, percentage_text, (b[0], b[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
     cv2.imshow("Pose Estimation", img)
 
